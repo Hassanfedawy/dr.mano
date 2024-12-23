@@ -1,6 +1,7 @@
 'use client'
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Navigation() {
@@ -16,8 +17,15 @@ export default function Navigation() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-2xl font-bold text-[#6A4E3C]">
-                Dr.Mano
+              <Link href="/" className="flex items-center h-full">
+                <Image 
+                  src="/Images/Logo.jpg" 
+                  alt="Dr. Mano Logo" 
+                  width={150} 
+                  height={50} 
+                  priority
+                  className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+                />
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

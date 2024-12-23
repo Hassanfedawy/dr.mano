@@ -5,8 +5,17 @@ import EmptyState from "@/components/EmptyState";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import ProtectedRoute from '@/components/ProtectedRoute';
 
-function OrdersPage() {
+export default function OrdersPage() {
+  return (
+    <ProtectedRoute>
+      <OrdersPageInner />
+    </ProtectedRoute>
+  );
+}
+
+function OrdersPageInner() {
   const { data: session } = useSession();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,5 +80,3 @@ function OrdersPage() {
     </div>
   );
 }
-
-export default OrdersPage;

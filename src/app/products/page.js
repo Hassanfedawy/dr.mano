@@ -5,8 +5,16 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Image from 'next/image';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function Products() {
+export default function ProductsPage() {
+  return (
+      <Products />
+  );
+}
+
+function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -92,15 +100,24 @@ export default function Products() {
           <div
             key={product.id}
             onClick={() => handleCardClick(product.id)}
-            className="cursor-pointer border rounded-lg overflow-hidden shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl"
+            className="cursor-pointer border rounded-lg overflow-hidden shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl relative"
           >
-            <img
-              src={product.images}
-              alt={product.name}
-              className="w-full h-48 object-cover transition-opacity hover:opacity-80"
-            />
+            <div className="relative w-full aspect-square">
+              <Image
+                src={product.images}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover transition-opacity hover:opacity-80"
+                priority={false}
+                loading="lazy"
+              />
+            </div>
             <div className="p-4">
               <h3 className="text-lg font-semibold text-[#89796D]">{product.name}</h3>
+              {product.subDescription && (
+                <p className="text-sm text-gray-600 mb-2">{product.subDescription}</p>
+              )}
               <p className="text-[#89796D]">${product.price}</p>
               <button
                 onClick={(e) => {

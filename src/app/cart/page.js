@@ -5,8 +5,17 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function Cart() {
+  return (
+    <ProtectedRoute>
+      <CartInner />
+    </ProtectedRoute>
+  );
+}
+
+function CartInner() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

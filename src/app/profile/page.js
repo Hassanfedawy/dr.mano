@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 function ProfileContent() {
   const { data: session, update: updateSession } = useSession();
@@ -206,4 +207,10 @@ function ProfileContent() {
   );
 }
 
-export default ProfileContent;
+export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfileContent />
+    </ProtectedRoute>
+  );
+}

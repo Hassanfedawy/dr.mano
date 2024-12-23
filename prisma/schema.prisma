@@ -76,20 +76,21 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String
-  price       Float
-  images      String?
-  stock       Int         @default(0)
-  categoryId  String?     @db.ObjectId
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  variants    Variant[]
-  reviews     Review[]
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  mainDescription   String
+  subDescription    String
+  price             Float
+  images            String?
+  stock             Int         @default(0)
+  categoryId        String?     @db.ObjectId
+  category          Category?   @relation(fields: [categoryId], references: [id])
+  variants          Variant[]
+  reviews           Review[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 model Variant {

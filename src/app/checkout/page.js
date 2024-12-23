@@ -2,8 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function Checkout() {
+  return (
+    <ProtectedRoute>
+      <CheckoutInner />
+    </ProtectedRoute>
+  );
+}
+
+function CheckoutInner() {
   const router = useRouter();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -27,7 +27,8 @@ const ProductList = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
+    mainDescription: '',
+    subDescription: '',
     price: '',
     stock: '',
     image: '', // Changed to handle a single image
@@ -66,7 +67,7 @@ const ProductList = () => {
     setError(null);
     setMessage(null);
 
-    if (!formData.name || !formData.price || !formData.image || !formData.description || !formData.stock) {
+    if (!formData.name || !formData.price || !formData.image || !formData.mainDescription || !formData.subDescription || !formData.stock) {
       setError('All fields are required.');
       setIsSubmitting(false);
       return;
@@ -84,7 +85,14 @@ const ProductList = () => {
       if (response.ok) {
         setMessage('Product added successfully!');
         fetchProducts(); // Reload the product list
-        setFormData({ name: '', description: '', price: '', stock: '', image: '' }); // Reset form
+        setFormData({ 
+          name: '', 
+          mainDescription: '', 
+          subDescription: '', 
+          price: '', 
+          stock: '', 
+          image: '' 
+        }); // Reset form
         setError(null); // Clear any existing errors
       } else {
         setError('Failed to add product.');
@@ -182,11 +190,22 @@ const ProductList = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Description</label>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Main Description</label>
           <textarea
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            value={formData.mainDescription}
+            onChange={(e) => setFormData({ ...formData, mainDescription: e.target.value })}
             className="w-full border rounded-lg p-2"
+            required
+            style={{ borderColor: colors.secondary }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Sub Description</label>
+          <textarea
+            value={formData.subDescription}
+            onChange={(e) => setFormData({ ...formData, subDescription: e.target.value })}
+            className="w-full border rounded-lg p-2"
+            required
             style={{ borderColor: colors.secondary }}
           />
         </div>
