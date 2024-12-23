@@ -141,23 +141,12 @@ export default function Checkout() {
                 <input
                   type="radio"
                   name="paymentMethod"
-                  value="card"
-                  checked={formData.paymentMethod === 'card'}
+                  value="cash"
+                  checked={formData.paymentMethod === 'cash'}
                   onChange={handleInputChange}
                   className="mr-2"
                 />
-                Credit Card
-              </label>
-              <label className="flex items-center text-gray-700">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="paypal"
-                  checked={formData.paymentMethod === 'paypal'}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                />
-                PayPal
+                Cash
               </label>
             </div>
           </div>
