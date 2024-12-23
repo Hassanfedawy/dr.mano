@@ -78,7 +78,6 @@ function ProfileContent() {
     setUpdating(true);
 
     try {
-      alert( JSON.stringify(formData))
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {

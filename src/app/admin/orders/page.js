@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -75,14 +75,14 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-[#6A4E3C]">Order Management</h1>
-        <div className="space-x-2">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#6A4E3C] mb-4 md:mb-0">Order Management</h1>
+        <div className="flex flex-wrap justify-center gap-2">
           {['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
-              className={`px-3 py-1 rounded transition duration-300 ease-in-out ${
+              className={`px-3 py-1 rounded transition duration-300 ease-in-out text-sm ${
                 filter === status
                   ? 'bg-[#6A4E3C] text-white'
                   : 'bg-[#F0F2F4] text-[#4E3B2D]'
@@ -97,59 +97,47 @@ export default function AdminOrdersPage() {
       {filteredOrders.length === 0 ? (
         <div className="text-center py-10 text-gray-500">No orders found</div>
       ) : (
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-[#F0F2F4]">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.map(order => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.user?.name || 'Unknown'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    ${order.total.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[order.status] || 'bg-gray-100 text-gray-800'}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => router.push(`/admin/orders/${order.id}`)}
-                        className="text-[#6A4E3C] hover:text-[#4E3B2D] transition duration-300"
-                      >
-                        View
-                      </button>
-                      <div className="relative group">
-                        <select
-                          value={order.status}
-                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="text-green-600 hover:text-green-900 bg-transparent"
-                        >
-                          {Object.keys(statusColors).map(status => (
-                            <option key={status} value={status}>{status}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredOrders.map(order => (
+            <div 
+              key={order.id} 
+              className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-600">Order #{order.id.slice(-6)}</span>
+                <span 
+                  className={`px-2 py-1 rounded-full text-xs ${statusColors[order.status] || 'bg-gray-100 text-gray-800'}`}
+                >
+                  {order.status}
+                </span>
+              </div>
+              <div className="mb-2">
+                <p className="text-sm text-gray-700">
+                  <strong>Customer:</strong> {order.user?.name || 'Unknown'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Total:</strong> ${order.total.toFixed(2)}
+                </p>
+              </div>
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => router.push(`/admin/orders/${order.id}`)}
+                  className="text-sm text-[#6A4E3C] hover:underline"
+                >
+                  View Details
+                </button>
+                <select
+                  value={order.status}
+                  onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                  className="text-sm border rounded px-2 py-1"
+                >
+                  {Object.keys(statusColors).map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

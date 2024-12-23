@@ -1,264 +1,178 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'USER'
-  });
+  const [filter, setFilter] = useState('ALL');
+  const router = useRouter();
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
+
+      const data = await response.json();
+      setUsers(data);
+      setLoading(false);
+    } catch (error) {
+      toast.error(error.message);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const updateUserRole = async (userId, newRole) => {
     try {
-      const response = await fetch('/api/admin/users');
-      const data = await response.json();
-      setUsers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const url = selectedUser
-        ? `/api/admin/users/${selectedUser.id}` // Add user ID for PUT request
-        : '/api/admin/users';
-      
-      const method = selectedUser ? 'PUT' : 'POST';
-  
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ role: newRole }),
       });
-  
-      if (response.ok) {
-        fetchUsers();
-        resetForm();
-      } else {
-        console.error('Failed to save user');
+
+      if (!response.ok) {
+        throw new Error('Failed to update user role');
       }
+
+      toast.success('User role updated successfully');
+      fetchUsers(); // Refresh users list
     } catch (error) {
-      console.error('Error saving user:', error);
+      toast.error(error.message);
     }
   };
-  
 
-  const handleEdit = (user) => {
-    setSelectedUser(user);
-    setFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      password: '' // Don't populate password for security
-    });
-    setShowForm(true);
-  };
+  const deleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
 
-  const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-  
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, { 
-        method: 'DELETE'
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
       });
-  
-      if (response.ok) {
-        fetchUsers();
-      } else {
-        const errorMessage = await response.text();
-        console.error('Failed to delete user:', errorMessage);  // Log the response body
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
       }
+
+      toast.success('User deleted successfully');
+      fetchUsers(); // Refresh users list
     } catch (error) {
-      console.error('Error deleting user:', error);
+      toast.error(error.message);
     }
   };
-  
-  
 
-  const resetForm = () => {
-    setSelectedUser(null);
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      role: 'USER'
-    });
-    setShowForm(false);
+  const filteredUsers = users.filter(user =>
+    filter === 'ALL' || user.role === filter
+  );
+
+  const roleColors = {
+    ADMIN: 'bg-red-100 text-red-800',
+    USER: 'bg-green-100 text-green-800',
+    VENDOR: 'bg-blue-100 text-blue-800'
   };
 
-  if (loading) return <div className="text-center">Loading...</div>;
+  if (loading) {
+    return <div className="text-center py-10">Loading users...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">User Management</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-[#6A4E3C] text-white px-4 py-2 rounded-lg transition-colors duration-200 hover:bg-[#4E3B2D] focus:outline-none"
-        >
-          {showForm ? 'Cancel' : 'Add New User'}
-        </button>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#6A4E3C] mb-4 md:mb-0">User Management</h1>
+        <div className="flex flex-wrap justify-center gap-2">
+          {['ALL', 'ADMIN', 'USER', 'VENDOR'].map(role => (
+            <button
+              key={role}
+              onClick={() => setFilter(role)}
+              className={`px-3 py-1 rounded transition duration-300 ease-in-out text-sm ${
+                filter === role
+                  ? 'bg-[#6A4E3C] text-white'
+                  : 'bg-[#F0F2F4] text-[#4E3B2D]'
+              } hover:bg-[#D9DADA]`}
+            >
+              {role}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow mb-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2 text-sm font-medium">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-medium">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required={!selectedUser}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-medium">Role</label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="USER">User</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="px-4 py-2 border border-gray-300 rounded-lg transition-colors duration-200 hover:bg-gray-100"
+      {filteredUsers.length === 0 ? (
+        <div className="text-center py-10 text-gray-500">No users found</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredUsers.map(user => (
+            <div 
+              key={user.id} 
+              className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#6A4E3C] text-white rounded-lg transition-colors duration-200 hover:bg-[#4E3B2D] focus:outline-none"
-            >
-              {selectedUser ? 'Update User' : 'Create User'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 relative flex-shrink-0">
-                      {user.image ? (
-                        <Image
-                          src={user.image}
-                          alt={user.name}
-                          fill
-                          className="object-cover rounded-full"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
-                          {user.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center space-x-3">
+                  {user.image ? (
+                    <img 
+                      src={user.image} 
+                      alt={user.name} 
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#6A4E3C] flex items-center justify-center text-white">
+                      {user.name?.charAt(0) || user.email?.charAt(0)}
                     </div>
-                    <div className="ml-4">
-                      <div className="font-medium text-gray-900">{user.name}</div>
-                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-sm">{user.name || 'Unknown'}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">{user.email}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
-                  }`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">{new Date(user.createdAt).toLocaleDateString()}</td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
+                </div>
+                <span 
+                  className={`px-2 py-1 rounded-full text-xs ${roleColors[user.role] || 'bg-gray-100 text-gray-800'}`}
+                >
+                  {user.role}
+                </span>
+              </div>
+              <div className="mt-4 flex justify-between items-center">
+                <button
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  className="text-sm text-[#6A4E3C] hover:underline"
+                >
+                  View Details
+                </button>
+                <div className="flex space-x-2">
+                  <select
+                    value={user.role}
+                    onChange={(e) => updateUserRole(user.id, e.target.value)}
+                    className="text-sm border rounded px-2 py-1"
                   >
-                    Edit
-                  </button>
+                    {Object.keys(roleColors).map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
                   <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-red-600 hover:text-red-900"
+                    onClick={() => deleteUser(user.id)}
+                    className="text-sm text-red-500 hover:text-red-700"
                   >
                     Delete
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

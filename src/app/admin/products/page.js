@@ -150,34 +150,6 @@ const ProductList = () => {
   return (
     <div className="container mx-auto p-6" style={{ backgroundColor: colors.neutral }}>
       <h2 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>Product List</h2>
-      <div>
-        {loading ? (
-          <Loader />
-        ) : (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.isArray(products) && products.length > 0 ? (
-              products.map((product) => (
-                <li
-                  key={product._id}
-                  className="flex flex-col items-center p-4 bg-white rounded shadow hover:shadow-lg transition duration-300"
-                >
-                  <img src={product.image} alt={product.name} className="w-32 h-32 object-cover rounded" />
-                  <h3 className="mt-2 text-lg font-semibold">{product.name}</h3>
-                  <p className="text-gray-500">${product.price}</p>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="mt-4 text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </li>
-              ))
-            ) : (
-              <p>No products available.</p>
-            )}
-          </ul>
-        )}
-      </div>
 
       {/* Add Product Form */}
       <h2 className="text-xl font-bold mt-8 mb-4" style={{ color: colors.primary }}>Add New Product</h2>

@@ -67,32 +67,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Users */}
-      <div>
-        <h1 className="text-2xl font-bold mb-4 text-primary">User Management</h1>
-        <table className="min-w-full bg-white border border-neutral rounded-lg shadow-lg">
-          <thead>
-            <tr className="bg-secondary text-white">
-              <th className="py-3 px-6 border-b">ID</th>
-              <th className="py-3 px-6 border-b">Name</th>
-              <th className="py-3 px-6 border-b">Email</th>
-              <th className="py-3 px-6 border-b">Role</th>
-              <th className="py-3 px-6 border-b">Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Users.map(user => (
-              <tr key={user.id} className="hover:bg-neutral-100">
-                <td className="py-2 px-4 border-b">{user.id}</td>
-                <td className="py-2 px-4 border-b">{user.name}</td>
-                <td className="py-2 px-4 border-b">{user.email}</td>
-                <td className="py-2 px-4 border-b">{user.role}</td>
-                <td className="py-2 px-4 border-b">{new Date(user.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+ 
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">

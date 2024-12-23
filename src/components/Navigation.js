@@ -7,6 +7,9 @@ export default function Navigation() {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Check if the user is an admin
+  const isAdmin = session?.user?.role === 'ADMIN';
+
   return (
     <nav className="bg-[#F0F2F4] shadow-lg z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,19 +27,22 @@ export default function Navigation() {
               >
                 Products
               </Link>
-              <Link
-                href="/cart"
-                className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
-              >
-                Cart
-              </Link>
-              <Link
-                href="/orders"
-                className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
-              >
-                Orders
-              </Link>
-
+              {!isAdmin && (
+                <>
+                  <Link
+                    href="/cart"
+                    className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
+                  >
+                    Cart
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
+                  >
+                    Orders
+                  </Link>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center">
@@ -50,12 +56,14 @@ export default function Navigation() {
                     Admin Dashboard
                   </Link>
                 )}
-                <Link
-                  href="/cart"
-                  className="text-[#6A4E3C] hover:text-[#4E3B2D] px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Cart
-                </Link>
+                {!isAdmin && (
+                  <Link
+                    href="/cart"
+                    className="text-[#6A4E3C] hover:text-[#4E3B2D] px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Cart
+                  </Link>
+                )}
                 <div className="relative ml-3">
                   <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -76,23 +84,27 @@ export default function Navigation() {
                   </button>
                   {mobileMenuOpen && (
                     <div className="z-40 origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <Link
-                        href="/cart"
-                        className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
-                      >
-                        Cart
-                      </Link>
+                      {!isAdmin && (
+                        <>
+                          <Link
+                            href="/cart"
+                            className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
+                          >
+                            Cart
+                          </Link>
+                          <Link
+                            href="/orders"
+                            className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
+                          >
+                            Orders
+                          </Link>
+                        </>
+                      )}
                       <Link
                         href="/products"
                         className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
                       >
                         Products
-                      </Link>
-                      <Link
-                        href="/orders"
-                        className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
-                      >
-                        Orders
                       </Link>
                       <Link
                         href="/profile"
