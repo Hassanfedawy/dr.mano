@@ -25,11 +25,11 @@ export default function Home() {
                   {session ? (
                     <div className="rounded-md shadow">
                       <Link
-                        href="/dashboard"
-                        className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#6A4E3C] hover:bg-[#4E3B2D] md:py-4 md:text-lg md:px-10"
-                      >
-                        Go to Dashboard
-                      </Link>
+                          href="/products"
+                          className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-[#6A4E3C] bg-[#F0F2F4] hover:bg-[#D9DADA] md:py-4 md:text-lg md:px-10"
+                        >
+                          Browse Products
+                        </Link>
                     </div>
                   ) : (
                     <>

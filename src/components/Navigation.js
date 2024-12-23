@@ -25,23 +25,18 @@ export default function Navigation() {
                 Products
               </Link>
               <Link
-                href="/categories"
+                href="/cart"
                 className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
               >
-                Categories
+                Cart
               </Link>
               <Link
-                href="/about"
+                href="/orders"
                 className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
               >
-                About
+                Orders
               </Link>
-              <Link
-                href="/contact"
-                className="text-[#6A4E3C] hover:text-[#4E3B2D] inline-flex items-center px-1 pt-1 text-sm font-medium"
-              >
-                Contact
-              </Link>
+
             </div>
           </div>
           <div className="flex items-center">
@@ -82,10 +77,22 @@ export default function Navigation() {
                   {mobileMenuOpen && (
                     <div className="z-40 origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <Link
-                        href="/dashboard"
+                        href="/cart"
                         className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
                       >
-                        Dashboard
+                        Cart
+                      </Link>
+                      <Link
+                        href="/products"
+                        className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
+                      >
+                        Products
+                      </Link>
+                      <Link
+                        href="/orders"
+                        className="block px-4 py-2 text-sm text-[#6A4E3C] hover:bg-[#F0F2F4]"
+                      >
+                        Orders
                       </Link>
                       <Link
                         href="/profile"
