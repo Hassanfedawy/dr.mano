@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import useCartStore from '@/store/cartStore';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -19,6 +20,7 @@ export default function ProductDetail() {
     try {
       const response = await fetch(`/api/products/${id}`);
       const data = await response.json();
+      console.log(data)
       setProduct(data);
       setLoading(false);
     } catch (error) {
@@ -27,28 +29,59 @@ export default function ProductDetail() {
     }
   };
 
-  const addToCart = async () => {
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: id,
-          quantity,
-        }),
+  const [isStoreReady, setIsStoreReady] = useState(false);
+  const { addItem } = useCartStore();
+
+  // Ensure the store is hydrated before rendering
+  useEffect(() => {
+    const store = useCartStore.persist.hasHydrated();
+    if (store) {
+      setIsStoreReady(true);
+    } else {
+      const unsubFinishHydration = useCartStore.persist.onFinishHydration(() => {
+        setIsStoreReady(true);
       });
 
-      if (!response.ok) throw new Error('Failed to add to cart');
-      alert('Product added to cart!');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Failed to add to cart');
+      // Cleanup subscription
+      return () => {
+        unsubFinishHydration();
+      };
+    }
+  }, []);
+
+  const addToCart = () => {
+    if (product) {
+      try {
+        addItem(product, quantity);
+        // Use a more user-friendly notification instead of an alert
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50';
+        notification.innerHTML = `
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Product added to cart!</span>
+          </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Remove the notification after 3 seconds
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transition = 'opacity 0.5s';
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 500);
+        }, 3000);
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+        alert('Failed to add product to cart. Please try again.');
+      }
     }
   };
 
-  if (loading) return <div> <LoadingSpinner /> </div>;
+  if (loading || !isStoreReady) return <div> <LoadingSpinner /> </div>;
   if (!product) return <div>Product not found</div>;
 
   return (
@@ -67,7 +100,15 @@ export default function ProductDetail() {
         {/* Product Info */}
         <div className="space-y-4">
           <h1 className="text-3xl font-bold text-[#6A4E3C] hover:text-[#4E3B2D] transition-colors">{product.name}</h1>
-          <p className="text-2xl font-semibold text-[#6A4E3C] hover:text-[#4E3B2D] transition-colors">${product.price}</p>
+          <div className="flex items-center space-x-3 my-3">
+            <span className="text-2xl font-semibold text-[#6A4E3C]">{product.price.toFixed(2)} جنيه</span>
+            {product.originalPrice && (
+              <span className="text-xl text-gray-500 line-through">{product.originalPrice.toFixed(2)} جنيه</span>
+            )}
+            {product.discountPercentage && (
+              <span className="text-lg text-orange-500 font-medium">{product.discountPercentage}% OFF</span>
+            )}
+          </div>
           <p className="text-[#6A4E3C]">{product.description}</p>
 
           <div className="space-y-2">
@@ -112,11 +153,27 @@ export default function ProductDetail() {
             <h2 className="text-xl font-semibold mb-2 text-[#6A4E3C] hover:text-[#4E3B2D] transition-colors">Product Details</h2>
             <div className="grid grid-cols-2 gap-4 text-sm text-[#6A4E3C]">
               <div>
-                <span className="font-medium">Category:</span> {product.category}
+                <span className="font-medium">Category:</span> {product.category ? product.category.name : 'Uncategorized'}
               </div>
               <div>
                 <span className="font-medium">Stock:</span> {product.stock}
               </div>
+              {product.link && (
+                <div className="col-span-2 mt-2">
+                  <span className="font-medium">Website: </span>
+                  <a
+                    href={product.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
+                  >
+                    Visit Official Website
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -4,23 +4,23 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, phoneNumber, shippingAddress, email, password } = await req.json();
 
-    if (!name || !email || !password) {
+    if (!name || !phoneNumber || !password) {
       return NextResponse.json(
-        { message: "All fields are required" },
+        { message: "Name, phone number, and password are required" },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
+    // Check if user already exists with the same phone number
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { phoneNumber },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User already exists" },
+        { message: "User with this phone number already exists" },
         { status: 400 }
       );
     }
@@ -32,12 +32,16 @@ export async function POST(req) {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        phoneNumber,
+        shippingAddress,
+        email, // Email is now optional
         password: hashedPassword,
       },
       select: {
         id: true,
         name: true,
+        phoneNumber: true,
+        shippingAddress: true,
         email: true,
         role: true
       }
@@ -54,4 +58,4 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-} 
+}

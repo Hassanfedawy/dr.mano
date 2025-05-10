@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -16,15 +16,23 @@ export default function SignIn() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Phone number validation
+    const phoneRegex = /^\d{10,15}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      toast.error('Please enter a valid phone number (10-15 digits)');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const result = await signIn('credentials', {
         redirect: false,
-        email,
+        phoneNumber,
         password
       });
 
       if (result?.error) {
-        toast.error('Invalid email or password');
+        toast.error('Invalid phone number or password');
       } else {
         toast.success('Successfully signed in!');
         router.push('/products');
@@ -53,16 +61,16 @@ export default function SignIn() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="phoneNumber" className="sr-only">Phone Number</label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-[#6A4E3C] focus:border-[#6A4E3C] focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Phone Number"
               />
             </div>
             <div>
@@ -104,9 +112,9 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white 
-                ${isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white
+                ${isLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-[#6A4E3C] hover:bg-[#4E3B2D]'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A4E3C]`}
             >

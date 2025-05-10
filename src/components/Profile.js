@@ -13,17 +13,19 @@ export default function Profile() {
     const [formData, setFormData] = useState({
       name: '',
       email: '',
+      phoneNumber: '',
+      shippingAddress: '',
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
     });
-  
+
     useEffect(() => {
       if (status === 'authenticated') {
         fetchProfile();
       }
     }, [status]);
-  
+
     const fetchProfile = async () => {
       try {
         const response = await fetch('/api/user/profile');
@@ -32,6 +34,8 @@ export default function Profile() {
         setFormData({
           name: data.name || '',
           email: data.email || '',
+          phoneNumber: data.phoneNumber || '',
+          shippingAddress: data.shippingAddress || '',
           currentPassword: '',
           newPassword: '',
           confirmPassword: ''
@@ -42,22 +46,22 @@ export default function Profile() {
         setLoading(false);
       }
     };
-  
+
     const handleSubmit = async (e) => {
       e.preventDefault();
-      
+
       if (formData.newPassword !== formData.confirmPassword) {
         toast.error('New passwords do not match');
         return;
       }
-  
+
       try {
         const response = await fetch('/api/user/profile', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
-  
+
         if (response.ok) {
           const updatedProfile = await response.json();
           setProfile(updatedProfile);
@@ -73,26 +77,26 @@ export default function Profile() {
         toast.error('Error updating profile');
       }
     };
-  
+
     if (status === 'loading' || loading) {
       return <LoadingSpinner />;
     }
-  
+
     if (status === 'unauthenticated') {
       return (
-        <EmptyState 
-          title="Please Sign In" 
+        <EmptyState
+          title="Please Sign In"
           description="You need to be signed in to view your profile"
           actionLink="/auth/signin"
           actionText="Sign In"
         />
       );
     }
-  
+
     return (
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-6">My Profile</h1>
-        
+
         <div className="bg-white shadow rounded-lg p-6">
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,9 +109,29 @@ export default function Profile() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
-  
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Shipping Address</label>
+                <textarea
+                  value={formData.shippingAddress}
+                  onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -115,10 +139,10 @@ export default function Profile() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
-  
+
               <div className="border-t pt-4 mt-4">
                 <h3 className="text-lg font-medium mb-4">Change Password</h3>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Current Password</label>
@@ -129,7 +153,7 @@ export default function Profile() {
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
-  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">New Password</label>
                     <input
@@ -139,7 +163,7 @@ export default function Profile() {
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
-  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
                     <input
@@ -151,7 +175,7 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-  
+
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
@@ -182,17 +206,24 @@ export default function Profile() {
                 )}
                 <div>
                   <h2 className="text-xl font-semibold">{profile.name}</h2>
-                  <p className="text-gray-600">{profile.email}</p>
+                  <p className="text-gray-600">{profile.phoneNumber}</p>
+                  {profile.email && <p className="text-gray-600">{profile.email}</p>}
+                  {profile.shippingAddress && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">Shipping Address:</p>
+                      <p className="text-gray-600">{profile.shippingAddress}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-  
+
               <button
                 onClick={() => setIsEditing(true)}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Edit Profile
               </button>
-  
+
               {profile.orders?.length > 0 && (
                 <div className="mt-8">
                   <h3 className="text-lg font-medium mb-4">Recent Orders</h3>

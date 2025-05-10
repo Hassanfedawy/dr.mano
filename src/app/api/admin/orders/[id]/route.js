@@ -36,6 +36,8 @@ export async function GET(req, { params }) {
             id: true,
             name: true,
             email: true,
+            phoneNumber: true,
+            shippingAddress: true,
           }
         },
         items: {
@@ -62,7 +64,7 @@ export async function GET(req, { params }) {
 
     // Recalculate total to ensure accuracy
     const calculatedTotal = order.items.reduce(
-      (sum, item) => sum + (item.quantity * item.price), 
+      (sum, item) => sum + (item.quantity * item.price),
       0
     );
 
@@ -116,9 +118,9 @@ export async function PATCH(req, { params }) {
     // Update order status
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: { 
+      data: {
         status,
-        updatedAt: new Date() 
+        updatedAt: new Date()
       },
       include: {
         user: {
@@ -145,7 +147,7 @@ export async function PATCH(req, { params }) {
 
     // Recalculate total to ensure accuracy
     const calculatedTotal = updatedOrder.items.reduce(
-      (sum, item) => sum + (item.quantity * item.price), 
+      (sum, item) => sum + (item.quantity * item.price),
       0
     );
 

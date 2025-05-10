@@ -7,7 +7,9 @@ import { toast } from 'react-toastify';
 
 export default function SignUp() {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [email, setEmail] = useState(''); // Keep email as optional
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,19 +26,33 @@ export default function SignUp() {
       return;
     }
 
+    // Phone number validation
+    const phoneRegex = /^\d{10,15}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      toast.error('Please enter a valid phone number (10-15 digits)');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name,
+          phoneNumber,
+          shippingAddress,
+          email, // Optional
+          password
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
+        throw new Error(data.message || 'Signup failed');
       }
 
       toast.success('Account created successfully!');
@@ -78,16 +94,41 @@ export default function SignUp() {
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="phoneNumber" className="sr-only">Phone Number</label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                required
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#6A4E3C] focus:border-[#6A4E3C] focus:z-10 sm:text-sm"
+                placeholder="Phone Number"
+              />
+            </div>
+            <div>
+              <label htmlFor="shippingAddress" className="sr-only">Shipping Address</label>
+              <textarea
+                id="shippingAddress"
+                name="shippingAddress"
+                required
+                value={shippingAddress}
+                onChange={(e) => setShippingAddress(e.target.value)}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#6A4E3C] focus:border-[#6A4E3C] focus:z-10 sm:text-sm"
+                placeholder="Shipping Address"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="sr-only">Email address (optional)</label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-[#6A4E3C] focus:border-[#6A4E3C] focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Email address (optional)"
               />
             </div>
             <div>
@@ -124,9 +165,9 @@ export default function SignUp() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white 
-                ${isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white
+                ${isLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-[#6A4E3C] hover:bg-[#4E3B2D]'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A4E3C]`}
             >

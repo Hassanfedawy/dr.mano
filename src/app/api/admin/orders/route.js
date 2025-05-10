@@ -26,6 +26,8 @@ export async function GET(req) {
             id: true,
             name: true,
             email: true,
+            phoneNumber: true,
+            shippingAddress: true,
           }
         },
         items: {

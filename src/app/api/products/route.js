@@ -7,37 +7,115 @@ const prisma = new PrismaClient();
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const category = searchParams.get("category");
+    const categorySlug = searchParams.get("category");
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
     const skip = (page - 1) * limit;
 
-    const where = category ? { category } : {};
+    // Build the where clause
+    let where = {};
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
+    // If category is specified, filter by category
+    if (categorySlug) {
+      try {
+        console.log(`Finding category with slug: ${categorySlug}`);
+
+        // Find the category by slug
+        const category = await prisma.category.findFirst({
+          where: { slug: categorySlug }
+        });
+
+        console.log('Category found:', category);
+
+        // If category exists, filter products by categoryId
+        if (category) {
+          where.categoryId = category.id;
+        } else {
+          console.log(`No category found with slug: ${categorySlug}`);
+          // For debugging, let's return some products anyway
+          return NextResponse.json({
+            products: [],
+            pagination: {
+              total: 0,
+              pages: 0,
+              current: page
+            }
+          });
+        }
+      } catch (categoryError) {
+        console.error("Error finding category:", categoryError);
+        // Return empty results on error
+        return NextResponse.json({
+          products: [],
+          pagination: {
+            total: 0,
+            pages: 0,
+            current: page
+          }
+        });
+      }
+    }
+
+    // Fetch products and count
+    let products = [];
+    let total = 0;
+
+    try {
+      console.log('Fetching products with where clause:', where);
+
+      // Get products with their categories
+      products = await prisma.product.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: "desc" },
-      }),
-      prisma.product.count({ where }),
-    ]);
+        include: {
+          category: true
+        }
+      });
 
+      console.log(`Found ${products.length} products`);
+
+      // Get total count
+      total = await prisma.product.count({ where });
+      console.log(`Total products count: ${total}`);
+    } catch (fetchError) {
+      console.error("Error fetching products:", fetchError);
+      // Return empty results on error
+      return NextResponse.json({
+        products: [],
+        pagination: {
+          total: 0,
+          pages: 0,
+          current: page
+        }
+      });
+    }
+
+    // Calculate pagination
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    // Return response
     return NextResponse.json({
       products,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
+        pages: totalPages,
         current: page,
       },
     });
   } catch (error) {
-    console.error("Products fetch error:", error);
-    return NextResponse.json(
-      { error: "Error fetching products" },
-      { status: 500 }
-    );
+    console.error("Products API error:", error);
+    // Return a safe response on error
+    return NextResponse.json({
+      products: [],
+      pagination: {
+        total: 0,
+        pages: 0,
+        current: 1
+      },
+      error: "Error processing request"
+    });
   }
 }
 
@@ -54,13 +132,15 @@ export async function POST(req) {
       );
     }
 
-    const { 
-      name, 
-      price, 
-      mainDescription, 
-      subDescription, 
-      stock, 
-      image 
+    const {
+      name,
+      price,
+      mainDescription,
+      subDescription,
+      stock,
+      image,
+      category,
+      link
     } = data;
 
     // Check for missing fields
@@ -71,7 +151,22 @@ export async function POST(req) {
       );
     }
 
-    // Parse and sanitize inputs
+    // Find category if provided
+    let categoryId = null;
+    if (category) {
+      try {
+        const categoryData = await prisma.category.findFirst({
+          where: { slug: category }
+        });
+        if (categoryData) {
+          categoryId = categoryData.id;
+        }
+      } catch (categoryError) {
+        console.error("Error finding category:", categoryError);
+      }
+    }
+
+    // Create product
     const product = await prisma.product.create({
       data: {
         name,
@@ -80,6 +175,8 @@ export async function POST(req) {
         price: parseFloat(price),
         stock: parseInt(stock) || 0,
         images: image,
+        link, // Add the optional link field
+        categoryId,
       },
     });
 

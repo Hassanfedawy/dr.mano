@@ -116,16 +116,16 @@ export default function UserManagement() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredUsers.map(user => (
-            <div 
-              key={user.id} 
+            <div
+              key={user.id}
               className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
             >
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center space-x-3">
                   {user.image ? (
-                    <img 
-                      src={user.image} 
-                      alt={user.name} 
+                    <img
+                      src={user.image}
+                      alt={user.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
@@ -135,10 +135,11 @@ export default function UserManagement() {
                   )}
                   <div>
                     <p className="font-semibold text-sm">{user.name || 'Unknown'}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-xs text-gray-500">{user.phoneNumber || 'No phone'}</p>
+                    {user.email && <p className="text-xs text-gray-500">{user.email}</p>}
                   </div>
                 </div>
-                <span 
+                <span
                   className={`px-2 py-1 rounded-full text-xs ${roleColors[user.role] || 'bg-gray-100 text-gray-800'}`}
                 >
                   {user.role}

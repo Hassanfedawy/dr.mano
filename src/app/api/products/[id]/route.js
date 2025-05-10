@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
@@ -9,6 +11,9 @@ export async function GET(req, { params }) {
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
+      include: {
+        category: true
+      }
     });
 
     if (!product) {
@@ -43,9 +48,35 @@ export async function PUT(req, { params }) {
     const data = await req.json();
     const { id } = params; // Get userId from URL params
 
+    // Check if category is provided as a slug
+    let categoryId = null;
+    if (data.category) {
+      try {
+        const categoryData = await prisma.category.findFirst({
+          where: { slug: data.category }
+        });
+        if (categoryData) {
+          categoryId = categoryData.id;
+          // Remove category from data and add categoryId
+          delete data.category;
+          data.categoryId = categoryId;
+        }
+      } catch (categoryError) {
+        console.error("Error finding category:", categoryError);
+      }
+    }
+
+    // Make sure link field is handled properly
+    if (data.link === '') {
+      data.link = null;
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data,
+      include: {
+        category: true
+      }
     });
 
     return NextResponse.json(product);

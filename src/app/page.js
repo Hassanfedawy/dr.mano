@@ -1,82 +1,154 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Carousel from '@/components/Carousel';
+import Image from 'next/image';
 
 export default function Home() {
-  const { data: session } = useSession();
+  // Define carousel images
+  const carouselImages = [
+    { src: "/Images/Carasoul logo.jpg", alt: "Dr. Mano Cosmetics" },
+    { src: "/Images/Carasoul1.jpg", alt: "Premium Skincare" },
+    { src: "/Images/Carasoul2.jpg", alt: "Premium Skincare" },
+    { src: "/Images/Carasoul3.jpg", alt: "Premium Skincare" },
+    { src: "/Images/Carasoul4.jpg", alt: "Premium Skincare" },
+  ];
 
   return (
     <div>
+      {/* Carousel Section */}
+      <div className="w-full px-4 py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto">
+          <Carousel images={carouselImages} autoplaySpeed={5000} />
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="relative bg-cover bg-center overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 pb-8 bg-[#F0F2F4] sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+          <div className="relative z-10 pb-8 bg-beige-light sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
             <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
               <div className="sm:text-center lg:text-left">
-                <h1 className="text-4xl tracking-tight font-extrabold text-[#6A4E3C] sm:text-5xl md:text-6xl">
-                  <span className="block xl:inline">Premium Cosmetics for</span>{' '}
-                  <span className="block text-[#6A4E3C] xl:inline">Your Beauty</span>
+                <h1 className="text-4xl tracking-tight font-serif font-bold text-charcoal sm:text-5xl md:text-6xl">
+                  <span className="block xl:inline">Where Beauty Meets Innovation</span>
+                  <span className="block text-brown xl:inline">Discover Your Brilliance</span>
                 </h1>
-                <p className="mt-3 text-base text-[#6A4E3C] sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  Discover our collection of high-quality cosmetic products designed to enhance your natural beauty. From skincare to makeup, we have everything you need.
-                </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  {session ? (
-                    <div className="rounded-md shadow">
-                      <Link
-                          href="/products"
-                          className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-[#6A4E3C] bg-[#F0F2F4] hover:bg-[#D9DADA] md:py-4 md:text-lg md:px-10"
-                        >
-                          Browse Products
-                        </Link>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="rounded-md shadow">
-                        <Link
-                          href="/auth/signin"
-                          className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#6A4E3C] hover:bg-[#4E3B2D] md:py-4 md:text-lg md:px-10"
-                        >
-                          Get Started
-                        </Link>
-                      </div>
-                      <div className="mt-3 sm:mt-0 sm:ml-3">
-                        <Link
-                          href="/products"
-                          className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-[#6A4E3C] bg-[#F0F2F4] hover:bg-[#D9DADA] md:py-4 md:text-lg md:px-10"
-                        >
-                          Browse Products
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </main>
           </div>
         </div>
       </div>
 
-      {/* Featured Products Section */}
-      <div className="bg-[#F0F2F4] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight text-[#6A4E3C] sm:text-4xl">
-              Featured Products
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-[#6A4E3C]">
-              Explore our best-selling cosmetic products
-            </p>
+      {/* Landing Photo */}
+      <div className="w-full flex justify-center items-center px-4 py-8">
+        <div className="relative w-full max-w-5xl h-[300px] sm:h-[400px] md:h-[500px]">
+          <Image
+            src="/Images/LANDING PHOTO.jpg"
+            alt="Dr. Mano Cosmetics"
+            fill
+            className="object-contain object-center"
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Sign In/Sign Up Buttons */}
+      <div className="w-full flex justify-center space-x-4 my-8">
+        <Link href="/auth/signin" className="border border-brown text-brown hover:bg-beige-dark transition-colors px-8 py-3 text-lg font-medium rounded-md">
+          SIGN IN
+        </Link>
+        <Link href="/auth/signup" className="bg-brown text-white hover:bg-brown-dark transition-colors px-8 py-3 text-lg font-medium rounded-md">
+          SIGN UP
+        </Link>
+      </div>
+
+      {/* Category Sections */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Hair Care Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg">
+            <Image
+              src="/Images/HairCare.jpg"
+              alt="Hair Care"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           </div>
-          {/* Featured Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-10">
-            {/* Product Card Placeholder */}
-            <div className="bg-white rounded-lg shadow-lg p-4 hover:scale-105 transition-all">
-              <img src="/product-placeholder.jpg" alt="Product" className="w-full h-64 object-cover rounded-md" />
-              <h3 className="mt-4 text-xl font-semibold text-[#6A4E3C]">Product Name</h3>
-              <p className="mt-2 text-[#6A4E3C]">$99.99</p>
-            </div>
+          <div className="flex flex-col justify-center items-center md:items-start">
+            <h2 className="text-5xl font-serif text-charcoal mb-4">Hair Care</h2>
+            <p className="text-lg text-brown-light mb-6 text-center md:text-left">
+              Experience luxurious nourishment and styling for every strand.
+            </p>
+            <Link href="/products/category/hair-care" className="border border-brown text-brown hover:bg-brown hover:text-white transition-colors px-8 py-2">
+              EXPLORE HAIR CARE
+            </Link>
+          </div>
+        </div>
+
+        {/* Skin Care Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div className="flex flex-col justify-center items-center md:items-end order-2 md:order-1">
+            <h2 className="text-5xl font-serif text-charcoal mb-4">Skin Care</h2>
+            <p className="text-lg text-brown-light mb-6 text-center md:text-right">
+              Unveil timeless beauty with our meticulously crafted skincare collections.
+            </p>
+            <Link href="/products/category/skin-care" className="border border-brown text-brown hover:bg-brown hover:text-white transition-colors px-8 py-2">
+              EXPLORE SKIN CARE
+            </Link>
+          </div>
+          <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg order-1 md:order-2">
+            <Image
+              src="/Images/SkinCare.jpg"
+              alt="Skin Care"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
+        </div>
+
+        {/* Fragrances Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg">
+            <Image
+              src="/Images/Fragnence.jpg"
+              alt="Fragrances"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
+          <div className="flex flex-col justify-center items-center md:items-start">
+            <h2 className="text-5xl font-serif text-charcoal mb-4">Fragrances</h2>
+            <p className="text-lg text-brown-light mb-6 text-center md:text-left">
+              Immerse yourself in exquisite aromas designed to leave a lasting impression.
+            </p>
+            <Link href="/products/category/fragrances" className="border border-brown text-brown hover:bg-brown hover:text-white transition-colors px-8 py-2">
+              DISCOVER FRAGRANCES
+            </Link>
+          </div>
+        </div>
+
+        {/* Home Care Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-col justify-center items-center md:items-end order-2 md:order-1">
+            <h2 className="text-5xl font-serif text-charcoal mb-4">Home Care</h2>
+            <p className="text-lg text-brown-light mb-6 text-center md:text-right">
+              Transform your space with our premium collection of home care essentials.
+            </p>
+            <Link href="/products/category/home-care" className="border border-brown text-brown hover:bg-brown hover:text-white transition-colors px-8 py-2">
+              EXPLORE HOME CARE
+            </Link>
+          </div>
+          <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg order-1 md:order-2">
+            <Image
+              src="/Images/HomeCare.jpg"
+              alt="Home Care"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           </div>
         </div>
       </div>

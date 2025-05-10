@@ -8,22 +8,24 @@ export const authOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        phoneNumber: { label: "Phone Number", type: "text" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password');
+        if (!credentials?.phoneNumber || !credentials?.password) {
+          throw new Error('Please enter a phone number and password');
         }
 
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email
+            phoneNumber: credentials.phoneNumber
           },
           select: {
             id: true,
             name: true,
             email: true,
+            phoneNumber: true,
+            shippingAddress: true,
             password: true,
             role: true,
             image: true
@@ -31,7 +33,7 @@ export const authOptions = {
         });
 
         if (!user) {
-          throw new Error('No user found with this email');
+          throw new Error('No user found with this phone number');
         }
 
         const passwordMatch = await bcrypt.compare(credentials.password, user.password);
@@ -43,6 +45,8 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
+          phoneNumber: user.phoneNumber,
+          shippingAddress: user.shippingAddress,
           name: user.name,
           role: user.role,
           image: user.image
@@ -79,4 +83,4 @@ export const authOptions = {
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };

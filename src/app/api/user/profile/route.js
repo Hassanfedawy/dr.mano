@@ -9,7 +9,7 @@ export async function GET(req) {
 
     const session = await getServerSession(authOptions);
     console.log("Session retrieved:", session);
-    
+
     if (!session || !session.user || !session.user.id) {
       console.error("Session retrieval failed:", session);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,6 +21,8 @@ export async function GET(req) {
         id: true,
         name: true,
         email: true,
+        phoneNumber: true,
+        shippingAddress: true,
         image: true,
         role: true,
         createdAt: true,
@@ -48,7 +50,7 @@ export async function GET(req) {
   } catch (error) {
     console.error("Profile fetch error:");
     const errorMessage = (error && typeof error.message === 'string') ? error.message : "An unknown error occurred";
-    
+
     // Ensure the response object is valid
     const responsePayload = {
       error: "Error fetching profile",
@@ -69,7 +71,7 @@ export async function PUT(request) {
     }
 
     const data = await request.json();
-    const { name, image } = data;
+    const { name, image, phoneNumber, shippingAddress, email } = data;
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -78,11 +80,16 @@ export async function PUT(request) {
       data: {
         name: name || undefined,
         image: image || undefined,
+        phoneNumber: phoneNumber || undefined,
+        shippingAddress: shippingAddress || undefined,
+        email: email || undefined,
       },
       select: {
         id: true,
         name: true,
         email: true,
+        phoneNumber: true,
+        shippingAddress: true,
         image: true,
         role: true,
         createdAt: true,

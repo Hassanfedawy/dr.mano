@@ -24,15 +24,24 @@ const Loader = () => (
 // ProductList Component
 const ProductList = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     mainDescription: '',
     subDescription: '',
     price: '',
+    originalPrice: '',
+    discountPercentage: '',
     stock: '',
     image: '', // Changed to handle a single image
+    category: '', // Category slug
+    link: '', // Optional external link
   });
+
+  // State for editing mode
+  const [editMode, setEditMode] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -44,7 +53,22 @@ const ProductList = () => {
       const response = await fetch('/api/products');
       const data = await response.json();
       if (Array.isArray(data.products)) {
-        setProducts(data.products);
+        // Fetch products with their categories
+        const productsWithCategories = await Promise.all(
+          data.products.map(async (product) => {
+            if (product.categoryId) {
+              try {
+                // We'll use the categories from the state if available
+                return product;
+              } catch (error) {
+                console.error('Error fetching category for product:', error);
+                return product;
+              }
+            }
+            return product;
+          })
+        );
+        setProducts(productsWithCategories);
       } else {
         setProducts([]);
       }
@@ -56,11 +80,45 @@ const ProductList = () => {
     }
   };
 
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
-  // Handle form submission for adding a product
+  // Reset form to default values
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      mainDescription: '',
+      subDescription: '',
+      price: '',
+      originalPrice: '',
+      discountPercentage: '',
+      stock: '',
+      image: '',
+      category: '',
+      link: ''
+    });
+    setEditMode(false);
+    setEditingProductId(null);
+  };
+
+  // Handle form submission for adding or updating a product
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -68,14 +126,19 @@ const ProductList = () => {
     setMessage(null);
 
     if (!formData.name || !formData.price || !formData.image || !formData.mainDescription || !formData.subDescription || !formData.stock) {
-      setError('All fields are required.');
+      setError('All required fields must be filled.');
       setIsSubmitting(false);
       return;
     }
 
     try {
-      const response = await fetch('/api/products', {
-        method: 'POST',
+      // Determine if we're adding or updating
+      const isUpdating = editMode && editingProductId;
+      const url = isUpdating ? `/api/products/${editingProductId}` : '/api/products';
+      const method = isUpdating ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -83,23 +146,16 @@ const ProductList = () => {
       });
 
       if (response.ok) {
-        setMessage('Product added successfully!');
+        setMessage(isUpdating ? 'Product updated successfully!' : 'Product added successfully!');
         fetchProducts(); // Reload the product list
-        setFormData({ 
-          name: '', 
-          mainDescription: '', 
-          subDescription: '', 
-          price: '', 
-          stock: '', 
-          image: '' 
-        }); // Reset form
-        setError(null); // Clear any existing errors
+        resetForm(); // Reset form and exit edit mode
       } else {
-        setError('Failed to add product.');
+        const errorData = await response.json();
+        setError(errorData.error || (isUpdating ? 'Failed to update product.' : 'Failed to add product.'));
       }
     } catch (error) {
-      console.error('Error adding product:', error);
-      setError('An error occurred while adding the product.');
+      console.error(isUpdating ? 'Error updating product:' : 'Error adding product:', error);
+      setError(`An error occurred while ${editMode ? 'updating' : 'adding'} the product.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -134,6 +190,29 @@ const ProductList = () => {
     }
   };
 
+  const handleEdit = (product) => {
+    // Set form data with product values
+    setFormData({
+      name: product.name || '',
+      mainDescription: product.mainDescription || '',
+      subDescription: product.subDescription || '',
+      price: product.price?.toString() || '',
+      originalPrice: product.originalPrice?.toString() || '',
+      discountPercentage: product.discountPercentage?.toString() || '',
+      stock: product.stock?.toString() || '',
+      image: product.images || '',
+      category: product.category?.slug || '',
+      link: product.link || '',
+    });
+
+    // Set edit mode
+    setEditMode(true);
+    setEditingProductId(product.id);
+
+    // Scroll to form
+    document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+  };
+
   const handleDelete = async (productId) => {
     const confirmation = window.confirm('Are you sure you want to delete this product?');
     if (!confirmation) return;
@@ -142,10 +221,15 @@ const ProductList = () => {
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
       });
-  
+
       if (response.ok) {
         setMessage('Product deleted successfully!');
         fetchProducts(); // Reload the product list
+
+        // If we were editing this product, reset the form
+        if (editingProductId === productId) {
+          resetForm();
+        }
       } else {
         setError('Failed to delete product.');
       }
@@ -159,9 +243,68 @@ const ProductList = () => {
     <div className="container mx-auto p-6" style={{ backgroundColor: colors.neutral }}>
       <h2 className="text-xl font-bold mb-4" style={{ color: colors.primary }}>Product List</h2>
 
-      {/* Add Product Form */}
-      <h2 className="text-xl font-bold mt-8 mb-4" style={{ color: colors.primary }}>Add New Product</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {loading ? (
+        <Loader />
+      ) : products.length === 0 ? (
+        <p className="text-center py-4">No products found.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {products.map((product) => (
+            <div key={product.id} className="border rounded-lg p-4 bg-white shadow-sm">
+              <div className="flex items-center mb-2">
+                <div className="w-16 h-16 relative mr-4">
+                  <img
+                    src={product.images || '/Images/placeholder.jpg'}
+                    alt={product.name}
+                    className="object-cover w-full h-full rounded"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm text-gray-600">{product.price.toFixed(2)} جنيه</p>
+                    {product.originalPrice && (
+                      <p className="text-xs text-gray-500 line-through">{product.originalPrice.toFixed(2)} جنيه</p>
+                    )}
+                    {product.discountPercentage && (
+                      <span className="text-xs text-orange-500 font-medium">{product.discountPercentage}% OFF</span>
+                    )}
+                  </div>
+                  {product.category ? (
+                    <span className="inline-block bg-beige-light text-brown-dark text-xs px-2 py-1 rounded mt-1">
+                      {product.category.name}
+                    </span>
+                  ) : (
+                    <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mt-1">
+                      Uncategorized
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => handleEdit(product)}
+                  className="text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Product Form */}
+      <h2 className="text-xl font-bold mt-8 mb-4" style={{ color: colors.primary }}>
+        {editMode ? 'Edit Product' : 'Add New Product'}
+      </h2>
+      <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="flex items-center space-x-2 bg-red-100 text-red-700 p-4 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
@@ -210,13 +353,44 @@ const ProductList = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Price</label>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Current Price</label>
           <input
             type="number"
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             className="w-full border rounded-lg p-2"
             required
+            style={{ borderColor: colors.secondary }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Original Price (if on sale)</label>
+          <input
+            type="number"
+            value={formData.originalPrice}
+            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+            className="w-full border rounded-lg p-2"
+            style={{ borderColor: colors.secondary }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Discount Percentage</label>
+          <input
+            type="number"
+            value={formData.discountPercentage}
+            onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
+            className="w-full border rounded-lg p-2"
+            style={{ borderColor: colors.secondary }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>External Link (Optional)</label>
+          <input
+            type="url"
+            value={formData.link}
+            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+            className="w-full border rounded-lg p-2"
+            placeholder="https://example.com"
             style={{ borderColor: colors.secondary }}
           />
         </div>
@@ -229,6 +403,22 @@ const ProductList = () => {
             className="w-full border rounded-lg p-2"
             style={{ borderColor: colors.secondary }}
           />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Category</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="w-full border rounded-lg p-2"
+            style={{ borderColor: colors.secondary }}
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.slug}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-semibold" style={{ color: colors.primary }}>Image</label>
@@ -247,14 +437,23 @@ const ProductList = () => {
             />
           )}
         </div>
-        <div>
+        <div className="flex space-x-4">
+          {editMode && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300"
             style={{ backgroundColor: colors.primary }}
           >
-            {isSubmitting ? 'Saving...' : 'Add Product'}
+            {isSubmitting ? 'Saving...' : editMode ? 'Update Product' : 'Add Product'}
           </button>
         </div>
       </form>

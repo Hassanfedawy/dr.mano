@@ -5,14 +5,17 @@ import EmptyState from "@/components/EmptyState";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function OrdersPage() {
-  return (
-    <ProtectedRoute>
-      <OrdersPageInner />
-    </ProtectedRoute>
-  );
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return <LoadingSpinner />;
+  }
+
+ 
+
+  return <OrdersPageInner />;
 }
 
 function OrdersPageInner() {
@@ -47,8 +50,8 @@ function OrdersPageInner() {
 
   if (orders.length === 0) {
     return (
-      <EmptyState 
-        title="No Orders Found" 
+      <EmptyState
+        title="No Orders Found"
         description="You have not placed any orders yet."
         actionLink="/products"
         actionText="Browse Products"
