@@ -39,18 +39,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Landing Photo */}
-      <div className="w-full flex justify-center items-center px-4 py-8">
-        <div className="relative w-full max-w-5xl h-[300px] sm:h-[400px] md:h-[500px]">
-          <Image
-            src="/Images/LANDING PHOTO.jpg"
-            alt="Dr. Mano Cosmetics"
-            fill
-            className="object-contain object-center"
-            priority
-          />
-        </div>
-      </div>
+    
 
       {/* Sign In/Sign Up Buttons */}
       <div className="w-full flex justify-center space-x-4 my-8">
@@ -67,6 +56,7 @@ export default function Home() {
         {/* Hair Care Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg">
+          <Link href="/products/category/hair-care">
             <Image
               src="/Images/HairCare.jpg"
               alt="Hair Care"
@@ -74,6 +64,7 @@ export default function Home() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+            </Link>
           </div>
           <div className="flex flex-col justify-center items-center md:items-start">
             <h2 className="text-5xl font-serif text-charcoal mb-4">Hair Care</h2>
@@ -98,6 +89,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg order-1 md:order-2">
+          <Link href="/products/category/skin-care">
             <Image
               src="/Images/SkinCare.jpg"
               alt="Skin Care"
@@ -105,12 +97,14 @@ export default function Home() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+          </Link>
           </div>
         </div>
 
         {/* Fragrances Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg">
+          <Link href="/products/category/fragrances">
             <Image
               src="/Images/Fragnence.jpg"
               alt="Fragrances"
@@ -118,6 +112,7 @@ export default function Home() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+            </Link>
           </div>
           <div className="flex flex-col justify-center items-center md:items-start">
             <h2 className="text-5xl font-serif text-charcoal mb-4">Fragrances</h2>
@@ -142,6 +137,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="relative aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-lg order-1 md:order-2">
+          <Link href="/products/category/home-care">
             <Image
               src="/Images/HomeCare.jpg"
               alt="Home Care"
@@ -149,6 +145,7 @@ export default function Home() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+            </Link>
           </div>
         </div>
       </div>

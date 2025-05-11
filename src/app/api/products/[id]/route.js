@@ -71,9 +71,35 @@ export async function PUT(req, { params }) {
       data.link = null;
     }
 
+    // Process the data before updating
+    const processedData = { ...data };
+
+    // Handle image field (frontend uses 'image', database uses 'images')
+    if (processedData.image !== undefined) {
+      processedData.images = processedData.image;
+      delete processedData.image;
+    }
+
+    // Handle numeric fields
+    if (processedData.price !== undefined) {
+      processedData.price = processedData.price ? parseFloat(processedData.price) : 0;
+    }
+
+    if (processedData.originalPrice !== undefined) {
+      processedData.originalPrice = processedData.originalPrice ? parseFloat(processedData.originalPrice) : null;
+    }
+
+    if (processedData.discountPercentage !== undefined) {
+      processedData.discountPercentage = processedData.discountPercentage ? parseInt(processedData.discountPercentage) : null;
+    }
+
+    if (processedData.stock !== undefined) {
+      processedData.stock = processedData.stock ? parseInt(processedData.stock) : 0;
+    }
+
     const product = await prisma.product.update({
       where: { id },
-      data,
+      data: processedData,
       include: {
         category: true
       }
@@ -81,8 +107,9 @@ export async function PUT(req, { params }) {
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error("Error updating product:", error.message, error.stack);
     return NextResponse.json(
-      { error: "Error updating product" },
+      { error: `Error updating product: ${error.message}` },
       { status: 500 }
     );
   }

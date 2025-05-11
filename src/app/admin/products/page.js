@@ -125,11 +125,7 @@ const ProductList = () => {
     setError(null);
     setMessage(null);
 
-    if (!formData.name || !formData.price || !formData.image || !formData.mainDescription || !formData.subDescription || !formData.stock) {
-      setError('All required fields must be filled.');
-      setIsSubmitting(false);
-      return;
-    }
+    // All fields are now optional
 
     try {
       // Determine if we're adding or updating
@@ -137,25 +133,38 @@ const ProductList = () => {
       const url = isUpdating ? `/api/products/${editingProductId}` : '/api/products';
       const method = isUpdating ? 'PUT' : 'POST';
 
+      // Prepare the data for submission
+      const submissionData = { ...formData };
+
+      // Ensure numeric fields are properly formatted
+      if (submissionData.price) submissionData.price = parseFloat(submissionData.price);
+      if (submissionData.originalPrice) submissionData.originalPrice = parseFloat(submissionData.originalPrice);
+      if (submissionData.discountPercentage) submissionData.discountPercentage = parseInt(submissionData.discountPercentage);
+      if (submissionData.stock) submissionData.stock = parseInt(submissionData.stock);
+
+      console.log('Submitting product data:', submissionData);
+
       const response = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
+
+      const responseData = await response.json();
 
       if (response.ok) {
         setMessage(isUpdating ? 'Product updated successfully!' : 'Product added successfully!');
         fetchProducts(); // Reload the product list
         resetForm(); // Reset form and exit edit mode
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || (isUpdating ? 'Failed to update product.' : 'Failed to add product.'));
+        console.error('API error response:', responseData);
+        setError(responseData.error || (isUpdating ? 'Failed to update product.' : 'Failed to add product.'));
       }
     } catch (error) {
       console.error(isUpdating ? 'Error updating product:' : 'Error adding product:', error);
-      setError(`An error occurred while ${editMode ? 'updating' : 'adding'} the product.`);
+      setError(`An error occurred while ${editMode ? 'updating' : 'adding'} the product: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -200,7 +209,7 @@ const ProductList = () => {
       originalPrice: product.originalPrice?.toString() || '',
       discountPercentage: product.discountPercentage?.toString() || '',
       stock: product.stock?.toString() || '',
-      image: product.images || '',
+      image: product.images || '', // Database field is 'images', form field is 'image'
       category: product.category?.slug || '',
       link: product.link || '',
     });
@@ -328,7 +337,7 @@ const ProductList = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full border rounded-lg p-2"
-            required
+
             style={{ borderColor: colors.secondary }}
           />
         </div>
@@ -338,7 +347,7 @@ const ProductList = () => {
             value={formData.mainDescription}
             onChange={(e) => setFormData({ ...formData, mainDescription: e.target.value })}
             className="w-full border rounded-lg p-2"
-            required
+
             style={{ borderColor: colors.secondary }}
           />
         </div>
@@ -348,7 +357,7 @@ const ProductList = () => {
             value={formData.subDescription}
             onChange={(e) => setFormData({ ...formData, subDescription: e.target.value })}
             className="w-full border rounded-lg p-2"
-            required
+
             style={{ borderColor: colors.secondary }}
           />
         </div>
@@ -359,7 +368,7 @@ const ProductList = () => {
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             className="w-full border rounded-lg p-2"
-            required
+
             style={{ borderColor: colors.secondary }}
           />
         </div>

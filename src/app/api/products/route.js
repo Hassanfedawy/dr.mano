@@ -143,13 +143,7 @@ export async function POST(req) {
       link
     } = data;
 
-    // Check for missing fields
-    if (!name || !price || !mainDescription || !subDescription || !image) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+    // All fields are now optional
 
     // Find category if provided
     let categoryId = null;
@@ -166,18 +160,24 @@ export async function POST(req) {
       }
     }
 
-    // Create product
+    // Create product with all optional fields
+    const productData = {
+      name: name || '',
+      mainDescription: mainDescription || '',
+      subDescription: subDescription || '',
+      price: price ? parseFloat(price) : 0,
+      stock: stock ? parseInt(stock) : 0,
+      images: image || '',
+      categoryId: categoryId || undefined,
+    };
+
+    // Only add link if it exists
+    if (link) {
+      productData.link = link;
+    }
+
     const product = await prisma.product.create({
-      data: {
-        name,
-        mainDescription,
-        subDescription,
-        price: parseFloat(price),
-        stock: parseInt(stock) || 0,
-        images: image,
-        link, // Add the optional link field
-        categoryId,
-      },
+      data: productData,
     });
 
     return NextResponse.json(product, { status: 201 });
