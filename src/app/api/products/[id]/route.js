@@ -7,7 +7,18 @@ const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {
-    const productId = params.id;
+    const { id } = params;
+    const productId = id;
+
+    // Validate the product ID format (for MongoDB ObjectId)
+    if (!productId || !/^[0-9a-fA-F]{24}$/.test(productId)) {
+      return NextResponse.json(
+        { error: "Invalid product ID format" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Fetching product with ID: ${productId}`);
 
     const product = await prisma.product.findUnique({
       where: { id: productId },
@@ -17,17 +28,19 @@ export async function GET(req, { params }) {
     });
 
     if (!product) {
+      console.log(`Product not found with ID: ${productId}`);
       return NextResponse.json(
         { error: "Product not found" },
         { status: 404 }
       );
     }
 
+    console.log(`Successfully retrieved product: ${product.name}`);
     return NextResponse.json(product);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching product:", error.message, error.stack);
     return NextResponse.json(
-      { error: "Error fetching product" },
+      { error: `Error fetching product: ${error.message}` },
       { status: 500 }
     );
   }
@@ -46,7 +59,7 @@ export async function PUT(req, { params }) {
     }
 
     const data = await req.json();
-    const { id } = params; // Get userId from URL params
+    const { id } = params; // Get productId from URL params
 
     // Check if category is provided as a slug
     let categoryId = null;
@@ -117,7 +130,7 @@ export async function PUT(req, { params }) {
 
 // DELETE product (admin only)
 export async function DELETE(req, { params }) {
-  const { id } = params; // Get userId from URL params
+  const { id } = params; // Get productId from URL params
   try {
     // Perform the deletion
     await prisma.product.delete({

@@ -11,7 +11,6 @@ export default function Home() {
     { src: "/Images/Carasoul1.jpg", alt: "Premium Skincare" },
     { src: "/Images/Carasoul2.jpg", alt: "Premium Skincare" },
     { src: "/Images/Carasoul3.jpg", alt: "Premium Skincare" },
-    { src: "/Images/Carasoul4.jpg", alt: "Premium Skincare" },
   ];
 
   return (
